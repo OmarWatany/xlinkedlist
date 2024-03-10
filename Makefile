@@ -1,4 +1,5 @@
 CFLAGS=-Wall -Wextra -g
 
-default : linkedlist.c linkedlist.h
-	gcc $(CFLAGS) -o list linkedlist.c linkedlist.h
+default : linked_list.c linked_list.h test_linked_list.c 
+	gcc $(CFLAGS) -o list test_linked_list.c linked_list.c linked_list.h
+
