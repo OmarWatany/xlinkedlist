@@ -34,14 +34,14 @@ Here's a basic example of how to use XLinkedList in your C code:
 
 ```c
 #include <stdio.h>
-#include "linked_list.h"
+#include "linkedlist.h"
 
 void _print_string(void *data);
 void _allocate_str(node *node, void *data);
 
 int main() {
     // Create a new linked list
-    linked_list_t *list = create_list(_allocate_str, _print_string);
+    linked_list_t *list = create_list(_allocate_str);
 
     // Add elements to the list at the beginning
     push_front(list, "World");
@@ -68,7 +68,7 @@ int main() {
     printf("\n");
 
     // or using dump_list function
-    dump_list(list);
+    dump_list(list,_print_string);
     printf("\n");
 
     // for deleting nodes from front or back
@@ -79,7 +79,7 @@ int main() {
     clear_list(list);
 
     // Free all memory allocated by the list
-    destroy_list(list);
+    destroy_list(&list);
 
   return 0;
 }
