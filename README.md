@@ -37,7 +37,7 @@ Here's a basic example of how to use XLinkedList in your C code:
 #include "linkedlist.h"
 
 void _print_string(void *data);
-void _allocate_str(node *node, void *data);
+void _allocate_str(node_t *node, void *data);
 
 int main() {
     // Create a new linked list
@@ -51,19 +51,21 @@ int main() {
     push_back(list, "!");
 
     // Traverse and print the list
-    list_iterator_t it = {.list = list};
-    node *current = list->head;
+    list_iterator_t *it = create_list_iterator(list);
+    node_t *current = get_list_head(list);
     while (current != NULL) {
-        _print_string(current->data);
-        current = iterator_next(&it);
+        _print_string(get_node_data(current));
+        current = next(it);
     }
     printf("\n");
 
     // Traverse and print the list from the back
-    current = it.from = list->tail;
+    // current = it.from = list->tail;
+    current = get_list_tail(list);
+    set_iterators_from(it,current);
     while (current != NULL) {
-        _print_string(current->data);
-        current = iterator_prev(&it);
+        _print_string(get_node_data(current));
+        current = prev(it);
     }
     printf("\n");
 
