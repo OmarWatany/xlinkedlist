@@ -112,7 +112,11 @@ int16_t push_back(linked_list_t *list, void *data) {
 
 void set_node_data(node_t *node, void *data) { node->data = data; };
 
-void *get_node_data(node_t *node) { return node->data; }
+void *get_node_data(node_t *node) {
+    if (node == NULL)
+        return NULL;
+    return node->data;
+}
 
 void *pop_front(linked_list_t *list) {
     void *value = NULL;
