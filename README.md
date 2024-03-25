@@ -18,12 +18,12 @@ To get started with XLinkedList, you can follow these steps:
    git clone https://github.com/OmarWatany/xlinkedlist.git
    ```
 
-2. Include the `linked_list.h` header file in your project.
+2. Include the `linkedlist.h` header file in your project.
 
-3. Compile your project along with `linked_list.c`:
+3. Compile your project along with `linkedlist.c`:
 
    ```bash
-   gcc -o your_program your_program.c linked_list.c
+   gcc -o your_program your_program.c linkedlist.c
    ```
 
 4. Start using XLinkedList in your code by including the necessary functions.
@@ -52,19 +52,19 @@ int main() {
 
     // Traverse and print the list
     list_iterator_t *it = create_list_iterator(list);
-    node_t *current = get_list_head(list);
+    node_t *current = list_head(list);
     while (current != NULL) {
-        _print_str(get_node_data(current));
+        _print_str(node_get_data(current));
         current = next(it);
     }
     printf("\n");
 
     // Traverse and print the list from the back
     // current = it.from = list->tail;
-    current = get_list_tail(list);
-    set_iterators_from(it,current);
+    current = list_tail(list);
+    itr_set_from(it,current);
     while (current != NULL) {
-        _print_str(get_node_data(current));
+        _print_str(node_get_data(current));
         current = prev(it);
     }
     printf("\n");

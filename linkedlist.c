@@ -1,4 +1,6 @@
 #include "linkedlist.h"
+#include <stdint.h>
+#include <stdlib.h>
 
 struct node_t {
     void  *data;
@@ -12,7 +14,7 @@ struct linked_list_t {
 
 struct list_iterator_t {
     linked_list_t *list;
-    node_t        *from;
+    node_t        *from, *begin, *end;
     size_t         prev_node, next_node;
 };
 
@@ -28,14 +30,15 @@ list_iterator_t *create_list_iterator(linked_list_t *list) {
     list_iterator_t *it = malloc(sizeof(list_iterator_t));
     if (list == NULL || it == NULL)
         return NULL;
-    it->list      = list;
-    it->from      = list->head;
+    it->list = list;
+    it->end  = list->tail;
+    it->from = it->begin = list->head;
     it->next_node = it->prev_node = 0;
     return it;
 }
 
-node_t *get_list_head(linked_list_t *list) { return list->head; }
-node_t *get_list_tail(linked_list_t *list) { return list->tail; }
+node_t *list_head(linked_list_t *list) { return list->head; }
+node_t *list_tail(linked_list_t *list) { return list->tail; }
 
 node_t *next(list_iterator_t *iterator) {
     node_t *from = iterator->from;
@@ -79,6 +82,9 @@ node_t *prev(list_iterator_t *iterator) {
     return iterator->from;
 }
 
+node_t *itr_begin(list_iterator_t *iterator) { return iterator->begin; }
+node_t *itr_end(list_iterator_t *iterator) { return iterator->end; }
+
 int16_t push_front(linked_list_t *list, void *data) {
     node_t *new_node = malloc(sizeof(node_t));
     list->allocate_data(new_node, data);
@@ -110,55 +116,59 @@ int16_t push_back(linked_list_t *list, void *data) {
     return EXIT_SUCCESS;
 }
 
-void set_node_data(node_t *node, void *data) { node->data = data; };
+void node_set_data(node_t *node, void *data) { node->data = data; };
 
-void *get_node_data(node_t *node) {
+void *node_data(node_t *node) {
     if (node == NULL)
         return NULL;
     return node->data;
 }
+void *peak_front(linked_list_t *list) { return list->head->data; }
+void *peak_back(linked_list_t *list) { return list->tail->data; }
 
-void *pop_front(linked_list_t *list) {
-    void *value = NULL;
+int16_t pop_front(linked_list_t *list) {
+    if (list->head == NULL || list == NULL)
+        return EXIT_SUCCESS;
 
     list_iterator_t *it = create_list_iterator(list);
-    if (list->head == NULL || it == NULL)
-        return value;
-    node_t *temp = list->head;
-    list->head   = next(it);
+    if (it == NULL)
+        return EXIT_FAILURE;
+
+    node_t *old_head = list->head;
+    list->head       = next(it);
     if (list->head == NULL) {
         list->tail = NULL;
     } else
-        list->head->link ^= (size_t)temp;
-    value = temp->data;
-    free(temp);
+        list->head->link ^= (size_t)old_head;
+    free(old_head->data);
+    free(old_head);
     free(it);
-    return value;
+    return EXIT_SUCCESS;
 }
 
-void *pop_back(linked_list_t *list) {
-    void *value = NULL;
+int16_t pop_back(linked_list_t *list) {
+
     if (list == NULL || list->head == NULL)
-        return value;
+        return EXIT_SUCCESS;
 
     if (list->tail == list->head)
         return pop_front(list);
 
     list_iterator_t *it = create_list_iterator(list);
-    set_iterators_from(it, list->tail);
     if (it == NULL)
-        return value;
+        return EXIT_FAILURE;
 
-    node_t *temp = list->tail;
-    list->tail   = prev(it);
+    itr_set_from(it, list->tail);
 
+    node_t *old_tail = list->tail;
+    list->tail       = prev(it);
     if (list->tail != NULL)
-        list->tail->link ^= (size_t)temp;
+        list->tail->link ^= (size_t)old_tail;
 
-    value = temp->data;
-    free(temp);
+    free(old_tail->data);
+    free(old_tail);
     free(it);
-    return value;
+    return EXIT_SUCCESS;
 }
 
 void clear_list(linked_list_t *list) {
@@ -166,7 +176,7 @@ void clear_list(linked_list_t *list) {
     if (it == NULL)
         return;
     while (list->head != NULL) {
-        free(pop_front(list));
+        pop_front(list);
     }
     free(it);
 }
@@ -177,14 +187,20 @@ void destroy_list(linked_list_t **list) {
     *list = NULL;
 }
 
-linked_list_t *get_iterators_list(list_iterator_t *iterator) {
-    return iterator->list;
-}
+linked_list_t *itr_list(list_iterator_t *iterator) { return iterator->list; }
 
-void set_iterators_from(list_iterator_t *iterator, node_t *from) {
-    if (iterator == NULL || get_iterators_list(iterator) == NULL)
+void itr_set_from(list_iterator_t *iterator, node_t *from) {
+    if (iterator == NULL || itr_list(iterator) == NULL)
         return;
     iterator->from = from;
+}
+
+void itr_set_begin(list_iterator_t *iterator, node_t *begin_node) {
+    iterator->begin = begin_node;
+}
+
+void itr_set_end(list_iterator_t *iterator, node_t *end_node) {
+    iterator->end = end_node;
 }
 
 int16_t dump_list(linked_list_t *list, void (*print_data)(void *)) {
@@ -212,7 +228,7 @@ int16_t reverse_dump_list(linked_list_t *list, void (*print_data)(void *)) {
         return EXIT_FAILURE;
 
     list_iterator_t *it = create_list_iterator(list);
-    set_iterators_from(it, temp);
+    itr_set_from(it, temp);
     if (it == NULL)
         return EXIT_FAILURE;
     while (temp != NULL) {
